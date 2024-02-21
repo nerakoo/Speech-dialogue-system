@@ -1,0 +1,19 @@
+#chattext{
+    width: 90%; /* 调整宽度 */
+    height: 400px; /* 调整高度 */
+    margin: 10px 0; /* 添加上下外边距 */
+    padding: 10px; /* 内边距 */
+    font-size: 16px; /* 文本大小 */
+    box-sizing: border-box; /* 保证宽度和高度包括内边距和边框 */
+    overflow-y: auto;
+}
+
+#speaktext{
+    width: 90%; /* 调整宽度 */
+    height: 150px; /* 调整高度 */
+    margin: 10px 0; /* 添加上下外边距 */
+    padding: 10px; /* 内边距 */
+    font-size: 16px; /* 文本大小 */
+    box-sizing: border-box; /* 保证宽度和高度包括内边距和边框 */
+    overflow-y: auto;
+}

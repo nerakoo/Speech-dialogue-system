@@ -1,0 +1,25 @@
+    client = microphone_ASR.speech.SpeechClient()
+    config = microphone_ASR.speech.RecognitionConfig(
+        encoding=microphone_ASR.speech.RecognitionConfig.AudioEncoding.LINEAR16,
+        sample_rate_hertz=microphone_ASR.RATE,
+        language_code=microphone_ASR.language_code,
+    )
+
+    streaming_config = microphone_ASR.speech.StreamingRecognitionConfig(
+        config=config, interim_results=True
+    )
+
+    with microphone_ASR.MicrophoneStream(microphone_ASR.RATE, microphone_ASR.CHUNK) as stream:
+        audio_generator = stream.generator()
+        requests = (
+            microphone_ASR.speech.StreamingRecognizeRequest(audio_content=content)
+            for content in audio_generator
+        )
+
+        responses = client.streaming_recognize(streaming_config, requests)
+
+        # Now, put the transcription responses to use.
+
+        microphone_ASR.listen_print_loop(responses)
+
+    sys.exit(app.exec_())
