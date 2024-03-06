@@ -16,6 +16,7 @@ class TTS:
 
         voices = self.engine.getProperty('voices')
         self.engine.setProperty('voice', voices[1].id)
+        print("TTS engine is ready!")
 
     def speak(self,text):
         a = self.engine.say(text)

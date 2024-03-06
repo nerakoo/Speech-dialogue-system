@@ -14,7 +14,7 @@ import init
 # import app
 from google.cloud import speech
 import pyaudio
-from six.moves import queue
+import queue
 from retico_core import *
 from retico_googleasr import *
 from evaluation import estimate_EO, estimate_RC, estimate_CT
@@ -155,14 +155,15 @@ def sentence_to_text(responses):
 
             w2w = word_by_word[0]
             iw2w = incre_word_by_word
-            EO = estimate_EO(w2w, iw2w)
-            print("============= EO: ", EO)
+            if(len(w2w) != 0):
+                EO = estimate_EO(w2w, iw2w)
+                print("============= EO: ", EO)
 
-            RC = estimate_RC(w2w, iw2w)
-            print("============= RC: ", RC)
+                RC = estimate_RC(w2w, iw2w)
+                print("============= RC: ", RC)
 
-            CTscore = estimate_CT(w2w, iw2w)
-            print("============= CTscore: ", CTscore)
+                CTscore = estimate_CT(w2w, iw2w)
+                print("============= CTscore: ", CTscore)
 
             print(transcript + overwrite_chars)
             answer = transcript + overwrite_chars
