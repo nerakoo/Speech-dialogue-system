@@ -14,97 +14,97 @@ eel.init('web')
 speaker = TTS.TTS()
 rm = RestaurantManager()
 
+# initiate a clarification request from GPT for the relevant slot.
 def clar_request(slot):
-    ans = rm.sendClarification(slot)
-    eel.updatechattext(ans)
+    #send request to GPT, then update the chat text and speak the response
+    ans = rm.sendClarification(slot) #
+    eel.updatechattext(ans) 
     speaker.speak(ans)
+
+    # get the user's response, send to GPT, convert the gpt response to our python dict.
     mic_input = microphone_ASR.set_up()
     gpt_output = rm.sendSlotPrompt(mic_input)
     gpt_dict = rm.convert_stringtodict(gpt_output)
     print(gpt_output)
+
+    #update the slots with the new information
     rm.updateSlots(gpt_dict)
     print("Slots are: ", rm.restaurant_slots)
     print("response is: ", gpt_output)
 
 @eel.expose
 def append_to_chattext():
-    eel.updatechattext("ChatGPT: Can I help you book a restaurant?")
-    speaker.speak("Can I help you book a restaurant?")
+    # update chat text with GPT and user responses
+    # GPT repsonse:
+    msg = 'Can I help you book a restaurant?'
+    eel.updatechattext("ChatGPT: " + msg)
+    speaker.speak(msg)
+
+    # User response:
     mic_input = microphone_ASR.set_up()
-    # print("mic_input: ", mic_input)
     ans =  "speaker:" + mic_input
-    # print("micinput: ", type(mic_input))
     eel.updatechattext(mic_input)
+    
+    #Send uterance to GPT, convert the response to our python dict, and update
     gpt_output = rm.sendSlotPrompt(mic_input)
     gpt_dict = rm.convert_stringtodict(gpt_output)
     rm.updateSlots(gpt_dict)
 
-    #while one of the slots is empty
-    #list of each of the slots?
-    '''for each slot
-        if slot is not none:
-            everything here'''
-
     print("Slots beginning: ", rm.restaurant_slots)
-
-
     keys = rm.check_empty_slots()
-    print("first Keys are: ", keys)
+    print("first empty Keys are: ", keys)
     
+    # loop through all keys with a None value, and request each.
+    # after a key has a value, it will be removed from the list of keys.
     while keys:
         currKey = keys[0]
         print('currKey: ', currKey)
-    #for slot in rm.restaurant_slots.keys():
-        if rm.restaurant_slots[currKey] is None:
-            quest =  rm.askForSlot(currKey)
-            eel.updatechattext("ChatGPT: "+quest)
-            speaker.speak(quest)
+
+        if rm.restaurant_slots[currKey] is None: #double check...
+            #GPT requests slot from user
+            slot_request =  rm.askForSlot(currKey)
+            eel.updatechattext("ChatGPT: "+slot_request)
+            speaker.speak(slot_request)
+
+            #listen for user utterance, then send to GPT
             mic_input = microphone_ASR.set_up()   
             eel.updatechattext("Speaker: " +mic_input)
             gpt_output = rm.sendSlotPrompt(mic_input)
-            print(gpt_output)
+            print(f'GPT Response:\n{gpt_output}\n')
 
+            # Sometimes GPT produces a dict / JSON that doesn't fit with our expected format.
+            # In this instance a ValueError is raised, 
+            # so we try to get a new response from GPT with the same prompt
+            # Sending a clarification request is another potential fix here, depends on requirements
             try:
                 gpt_dict = rm.convert_stringtodict(gpt_output)
             except ValueError: 
                 print("ValueError found... retrying...")
-                print(gpt_output)
                 gpt_output = rm.sendSlotPrompt(mic_input)
-                gpt_dict = rm.convert_stringtodict(gpt_output)
-                #clar_request(keys[0])
+                print(f'New GPT Response after ValueError:\n{gpt_output}\n')
+                gpt_dict = rm.convert_stringtodict(gpt_output) #retry...
                 print("Slots after error: ", rm.restaurant_slots)
-        
-
-        # keys = rm.check_empty_slots()
-        #not getting updated properly
-        rm.updateSlots(gpt_dict)
+                #clar_request(currKey)
+                
+        # update any slots found, and update the keys iterable
+        rm.updateSlots(gpt_dict) 
         keys = rm.check_empty_slots()
         print("Slots updated: ", rm.restaurant_slots)
-
         print("Keys are: ", keys)
+
+        # if the slot is still empty, request clarification from GPT
         while currKey in keys:
-            #while rm.restaurant_slots[currKey] is None:
             clar_request(currKey)
             print("Slots after looped clarification request: ", rm.restaurant_slots)
-            #print("response is: ", gpt_output)
             keys = rm.check_empty_slots()
             print("Keys in loop are: ", keys)
-            
 
-            
-        '''while rm.restaurant_slots[slot] is None:
-            clar_request(slot) # not updateing
-            #rm.updateSlots(gpt_dict)
-            print("Slots after clarification request: ", rm.restaurant_slots)
-            #print("response is: ", gpt_output)'''
-
-    ans = "Convo Finished"
+    ans = "Convo Finished" # all slots have been found, termiate conversation.
     eel.updatechattext(ans)
     speaker.speak(ans)
 
 # @eel.expose
 # def update_speaktext(ans):
 #     eel.updatespeaktext(ans)
-
 
 eel.start('index.html', size=(1100, 950))
