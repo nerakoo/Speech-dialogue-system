@@ -40,3 +40,6 @@ distro
 # Start
 
 run app.py
+
+
+ Checking git
